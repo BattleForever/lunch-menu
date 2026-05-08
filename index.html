@@ -1,0 +1,1400 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>午饭菜单</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #fffaf2;
+      --ink: #24221f;
+      --muted: #6d6861;
+      --line: #e7ded2;
+      --green: #2f6f4e;
+      --green-2: #dceadf;
+      --red: #a23d32;
+      --yellow: #f2c94c;
+      --blue: #426c8f;
+      --shadow: 0 18px 50px rgba(54, 43, 31, .12);
+      --radius: 8px;
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, rgba(255,250,242,.94), rgba(255,250,242,.98)),
+        url("https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1800&q=80") center / cover fixed;
+      color: var(--ink);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 28px 22px 44px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 26px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      box-shadow: var(--shadow);
+      flex: 0 0 auto;
+    }
+
+    .brand svg {
+      width: 24px;
+      height: 24px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 42px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .icon-btn,
+    .primary-btn,
+    .ghost-btn {
+      min-height: 42px;
+      border-radius: var(--radius);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+      white-space: nowrap;
+    }
+
+    .icon-btn {
+      width: 42px;
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .primary-btn {
+      padding: 0 16px;
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(47,111,78,.22);
+    }
+
+    .ghost-btn {
+      padding: 0 14px;
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .icon-btn:hover,
+    .primary-btn:hover,
+    .ghost-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(54, 43, 31, .13);
+    }
+
+    .icon-btn svg,
+    .primary-btn svg,
+    .ghost-btn svg,
+    .modal-close svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr);
+      gap: 22px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .today-panel {
+      min-height: 340px;
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(231, 222, 210, .8);
+    }
+
+    .today-panel img {
+      width: 100%;
+      height: 100%;
+      min-height: 340px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .today-copy {
+      position: absolute;
+      inset: auto 0 0;
+      padding: 30px;
+      background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .68));
+      color: #fff;
+    }
+
+    .today-copy h2 {
+      margin: 0 0 8px;
+      font-size: clamp(30px, 5vw, 60px);
+      line-height: .98;
+      letter-spacing: 0;
+    }
+
+    .today-copy p {
+      max-width: 660px;
+      margin: 0;
+      color: rgba(255,255,255,.86);
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .pick-panel {
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      min-height: 340px;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel-title h2,
+    .menu-head h2 {
+      margin: 0;
+      font-size: 21px;
+      letter-spacing: 0;
+    }
+
+    .date-chip {
+      color: var(--red);
+      background: #fae8e5;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .selected-list {
+      display: grid;
+      gap: 10px;
+      flex: 1;
+      align-content: start;
+      min-height: 120px;
+    }
+
+    .selected-item,
+    .empty-state {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 11px;
+      background: #fffdf9;
+    }
+
+    .selected-item {
+      display: grid;
+      grid-template-columns: 54px minmax(0, 1fr) 32px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .selected-item img {
+      width: 54px;
+      height: 54px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .selected-item strong {
+      display: block;
+      font-size: 15px;
+    }
+
+    .selected-item span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .remove-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: #f7eee6;
+      color: var(--red);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .note-box {
+      margin-top: 16px;
+      border-top: 1px solid var(--line);
+      padding-top: 15px;
+    }
+
+    .note-box label {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .note-box input {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 0 12px;
+      color: var(--ink);
+      background: #fffdf9;
+      outline: none;
+    }
+
+    .pick-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .history-box {
+      margin-top: 16px;
+      border-top: 1px solid var(--line);
+      padding-top: 15px;
+    }
+
+    .history-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .history-title h3 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 8px;
+      max-height: 214px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .history-item {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fffdf9;
+      padding: 10px;
+    }
+
+    .history-item summary {
+      cursor: pointer;
+      font-weight: 700;
+      list-style-position: inside;
+    }
+
+    .history-item ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 13px;
+    }
+
+    .history-note {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 46px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 0 13px;
+    }
+
+    .search-wrap svg {
+      width: 18px;
+      height: 18px;
+      color: var(--muted);
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .chip {
+      min-height: 38px;
+      padding: 0 13px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .chip.active {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+    }
+
+    .menu-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0 14px;
+    }
+
+    .menu-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .category-stack {
+      display: grid;
+      gap: 22px;
+    }
+
+    .category-section {
+      display: grid;
+      gap: 12px;
+    }
+
+    .category-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+    }
+
+    .category-head h3 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    .category-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .category-count {
+      border-radius: 999px;
+      background: #eef4ef;
+      color: var(--green);
+      padding: 6px 10px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .dish-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(54,43,31,.08);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .dish-image {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      background: #eee2d6;
+      overflow: hidden;
+    }
+
+    .dish-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .28s ease;
+    }
+
+    .dish-card:hover img {
+      transform: scale(1.04);
+    }
+
+    .badge-row {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      border-radius: 999px;
+      background: rgba(255,255,255,.9);
+      color: var(--ink);
+      padding: 5px 8px;
+      font-size: 12px;
+      backdrop-filter: blur(8px);
+    }
+
+    .dish-body {
+      padding: 14px 14px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .dish-title {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .dish-title h3 {
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .heat {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      color: var(--red);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .dish-body p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .meta span {
+      background: #f7f1e9;
+      border-radius: 999px;
+      padding: 5px 8px;
+    }
+
+    .card-actions {
+      margin-top: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .card-actions button {
+      min-height: 38px;
+      border-radius: 7px;
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--ink);
+    }
+
+    .card-actions button.pick {
+      background: var(--green-2);
+      border-color: #bfd5c5;
+      color: #214b35;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: rgba(24, 22, 20, .54);
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(880px, 100%);
+      max-height: min(760px, 92vh);
+      overflow: auto;
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: 0 30px 80px rgba(0,0,0,.34);
+    }
+
+    .modal-hero {
+      position: relative;
+      min-height: 280px;
+    }
+
+    .modal-hero img {
+      width: 100%;
+      height: 320px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.92);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+    }
+
+    .modal-content {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: .8fr 1.2fr;
+      gap: 22px;
+    }
+
+    .modal-content h2 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+
+    .modal-content p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .recipe-block {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .recipe-block h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+    }
+
+    .recipe-block ul,
+    .recipe-block ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      background: var(--ink);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 20;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      .topbar,
+      .hero,
+      .filters,
+      .menu-head {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar,
+      .menu-head {
+        align-items: stretch;
+      }
+
+      .category-head {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .toolbar,
+      .chips {
+        justify-content: flex-start;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .modal-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        padding: 18px 14px 34px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .today-copy {
+        padding: 22px;
+      }
+
+      .card-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M6 3v7a4 4 0 0 0 4 4V3"/><path d="M10 14v7"/><path d="M17 3v18"/><path d="M17 3c2.2 1.2 3.5 3.2 3.5 5.8S19.2 13.4 17 15"/></svg>
+        </div>
+        <div>
+          <h1>午饭菜单</h1>
+          <p class="subtitle">给每天中午的选择困难，留一个好看又好用的答案。</p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="ghost-btn" id="clearPicks" type="button">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
+          清空
+        </button>
+        <button class="primary-btn" id="randomPick" type="button">
+          <svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+          随机推荐
+        </button>
+      </div>
+    </header>
+
+    <section class="hero" aria-label="今日推荐和已选菜单">
+      <article class="today-panel">
+        <img id="featuredImage" src="assets/tomato-beef.jpg" alt="今日推荐菜品" />
+        <div class="today-copy">
+          <h2 id="featuredName">番茄牛腩</h2>
+          <p id="featuredDesc">软烂牛腩、酸甜番茄和米饭很搭，适合工作日中午吃得认真一点。</p>
+        </div>
+      </article>
+
+      <aside class="pick-panel" aria-label="今天想吃">
+        <div class="panel-title">
+          <h2>今天想吃</h2>
+          <span class="date-chip" id="todayText"></span>
+        </div>
+        <div class="selected-list" id="selectedList"></div>
+        <div class="note-box">
+          <label for="lunchNote">口味备注</label>
+          <input id="lunchNote" type="text" placeholder="例如：少辣、多放葱、不要香菜" />
+          <div class="pick-actions">
+            <button class="primary-btn" id="saveMenu" type="button">
+              <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>
+              保存今天菜单
+            </button>
+          </div>
+        </div>
+        <div class="history-box">
+          <div class="history-title">
+            <h3>已吃菜单</h3>
+            <button class="ghost-btn" id="clearHistory" type="button">清空记录</button>
+          </div>
+          <div class="history-list" id="historyList"></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="filters" aria-label="筛选菜单">
+      <label class="search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="searchInput" type="search" placeholder="搜菜名、食材、口味" />
+      </label>
+      <div class="chips" id="filterChips"></div>
+    </section>
+
+    <section aria-label="菜谱菜单">
+      <div class="menu-head">
+        <div>
+          <h2>菜谱和图片</h2>
+          <p>点“加入午餐”放进今天的候选清单，点“看菜谱”可以看到食材和步骤。</p>
+        </div>
+        <button class="ghost-btn" id="showAll" type="button">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+          全部菜品
+        </button>
+      </div>
+      <div class="category-stack" id="dishGrid"></div>
+    </section>
+  </main>
+
+  <div class="modal" id="recipeModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <article class="modal-card">
+      <div class="modal-hero">
+        <img id="modalImage" src="" alt="" />
+        <button class="modal-close" id="closeModal" type="button" aria-label="关闭菜谱">
+          <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-content">
+        <div>
+          <h2 id="modalTitle"></h2>
+          <p id="modalDesc"></p>
+          <div class="meta" id="modalMeta"></div>
+        </div>
+        <div class="recipe-block">
+          <h3>食材</h3>
+          <ul id="modalIngredients"></ul>
+          <h3 style="margin-top:18px">做法</h3>
+          <ol id="modalSteps"></ol>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const dishes = [
+      {
+        id: "tomato-beef",
+        name: "番茄牛腩",
+        category: "下饭菜",
+        time: "70 分钟",
+        difficulty: "中等",
+        heat: "不辣",
+        image: "assets/tomato-beef.jpg",
+        desc: "番茄熬出汤底，牛腩炖到软烂，拌米饭很稳。",
+        tags: ["牛肉", "番茄", "米饭", "酸甜"],
+        ingredients: ["牛腩 500g", "番茄 3 个", "洋葱半个", "姜片、葱段", "生抽、老抽、盐、冰糖"],
+        steps: ["牛腩冷水下锅焯水，洗净浮沫。", "番茄去皮切块，洋葱切丝。", "锅中炒香姜葱和洋葱，下番茄炒出汁。", "放牛腩、生抽、少量老抽和热水，小火炖 60 分钟。", "收汁调盐，浇在热米饭上。"]
+      },
+      {
+        id: "cola-wings",
+        name: "可乐鸡翅",
+        category: "下饭菜",
+        time: "30 分钟",
+        difficulty: "简单",
+        heat: "不辣",
+        image: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=1200&q=80",
+        desc: "甜咸口、颜色漂亮，适合想吃一点小满足的中午。",
+        tags: ["鸡翅", "甜咸", "快手"],
+        ingredients: ["鸡中翅 8-10 个", "可乐 1 听", "姜片", "生抽、老抽、料酒", "白芝麻"],
+        steps: ["鸡翅两面划刀，加料酒和姜片腌 10 分钟。", "平底锅少油煎到两面金黄。", "倒入可乐、生抽和少量老抽。", "中火煮开后转小火，最后大火收汁。", "撒白芝麻出锅。"]
+      },
+      {
+        id: "shrimp-egg",
+        name: "虾仁滑蛋",
+        category: "清爽",
+        time: "15 分钟",
+        difficulty: "简单",
+        heat: "不辣",
+        image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=1200&q=80",
+        desc: "蛋香和虾仁很干净，配饭、配面都合适。",
+        tags: ["虾仁", "鸡蛋", "高蛋白"],
+        ingredients: ["虾仁 150g", "鸡蛋 3 个", "牛奶或清水 1 勺", "盐、白胡椒", "葱花"],
+        steps: ["虾仁用盐、白胡椒抓匀。", "鸡蛋加一勺牛奶或清水打散。", "热锅少油，虾仁炒到变色盛出。", "倒蛋液，小火推炒到半凝固。", "放回虾仁，撒葱花立刻出锅。"]
+      },
+      {
+        id: "pork-pepper",
+        name: "青椒肉丝",
+        category: "快手",
+        time: "20 分钟",
+        difficulty: "简单",
+        heat: "微辣",
+        image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=80",
+        desc: "锅气足、很下饭，是午餐菜单里的常备选手。",
+        tags: ["猪肉", "青椒", "家常"],
+        ingredients: ["里脊肉 200g", "青椒 2 个", "蒜末", "生抽、蚝油", "淀粉、料酒"],
+        steps: ["肉丝加生抽、料酒、淀粉抓匀。", "青椒切丝，蒜切末。", "热锅滑炒肉丝到变色盛出。", "炒香蒜末和青椒丝。", "放回肉丝，加蚝油翻匀。"]
+      },
+      {
+        id: "mapo-tofu",
+        name: "麻婆豆腐",
+        category: "重口",
+        time: "25 分钟",
+        difficulty: "中等",
+        heat: "中辣",
+        image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=1200&q=80",
+        desc: "豆腐嫩、汤汁浓，适合想吃热辣下饭菜的时候。",
+        tags: ["豆腐", "牛肉末", "川味"],
+        ingredients: ["嫩豆腐 1 盒", "牛肉末 80g", "豆瓣酱", "花椒粉", "蒜末、葱花、淀粉水"],
+        steps: ["豆腐切块，热水加盐焯 1 分钟。", "炒香牛肉末、蒜末和豆瓣酱。", "加水煮开，放入豆腐轻推。", "小火煮 5 分钟后淋淀粉水。", "撒花椒粉和葱花。"]
+      },
+      {
+        id: "teriyaki-salmon",
+        name: "照烧三文鱼",
+        category: "清爽",
+        time: "25 分钟",
+        difficulty: "简单",
+        heat: "不辣",
+        image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=1200&q=80",
+        desc: "鱼肉油润，照烧汁甜咸，配米饭和蔬菜就是一份完整便当。",
+        tags: ["三文鱼", "便当", "高蛋白"],
+        ingredients: ["三文鱼排 1 块", "生抽 2 勺", "味淋或蜂蜜 1 勺", "清酒或料酒 1 勺", "西兰花、胡萝卜"],
+        steps: ["三文鱼擦干，两面撒少许盐。", "调生抽、味淋和料酒成照烧汁。", "锅中少油煎鱼，两面各 2-3 分钟。", "倒入照烧汁，小火裹汁。", "配焯熟蔬菜和米饭。"]
+      },
+      {
+        id: "mushroom-chicken",
+        name: "香菇鸡腿焖饭",
+        category: "一锅出",
+        time: "45 分钟",
+        difficulty: "简单",
+        heat: "不辣",
+        image: "https://images.unsplash.com/photo-1534939561126-855b8675edd7?auto=format&fit=crop&w=1200&q=80",
+        desc: "肉、菜、饭一起焖，香味扎实，做起来省心。",
+        tags: ["鸡腿", "香菇", "米饭", "省事"],
+        ingredients: ["鸡腿肉 250g", "干香菇 6 朵", "胡萝卜半根", "大米 1.5 杯", "生抽、蚝油、姜片"],
+        steps: ["鸡腿肉切块，加生抽、蚝油腌 15 分钟。", "香菇泡发切片，胡萝卜切丁。", "锅中炒香鸡腿、香菇和胡萝卜。", "电饭煲放米和正常水量，倒入炒好的料。", "按煮饭键，出锅拌匀。"]
+      },
+      {
+        id: "cold-noodle",
+        name: "鸡丝凉面",
+        category: "清爽",
+        time: "25 分钟",
+        difficulty: "简单",
+        heat: "微辣",
+        image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1200&q=80",
+        desc: "夏天很适合，酱汁提前调好，中午拌一下就能吃。",
+        tags: ["鸡胸", "面条", "黄瓜", "夏天"],
+        ingredients: ["面条 1 份", "鸡胸肉 1 块", "黄瓜丝", "芝麻酱、生抽、醋", "蒜末、辣椒油"],
+        steps: ["鸡胸煮熟撕丝。", "面条煮熟过凉水。", "芝麻酱加生抽、醋、蒜末和少量水调开。", "面条铺黄瓜丝和鸡丝。", "淋酱汁，按口味加辣椒油。"]
+      },
+      {
+        id: "eggplant",
+        name: "鱼香茄子",
+        category: "重口",
+        time: "30 分钟",
+        difficulty: "中等",
+        heat: "微辣",
+        image: "https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&w=1200&q=80",
+        desc: "酸甜咸香都有，茄子软糯，特别适合拌米饭。",
+        tags: ["茄子", "鱼香汁", "家常"],
+        ingredients: ["茄子 2 根", "肉末 100g", "豆瓣酱", "生抽、醋、糖", "蒜末、姜末、淀粉水"],
+        steps: ["茄子切条，少油煎软或蒸软。", "调生抽、醋、糖和淀粉水。", "锅中炒香肉末、姜蒜和豆瓣酱。", "放入茄子翻炒。", "倒鱼香汁收浓。"]
+      },
+      {
+        id: "broccoli-beef",
+        name: "西兰花牛肉",
+        category: "健身",
+        time: "25 分钟",
+        difficulty: "简单",
+        heat: "不辣",
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=1200&q=80",
+        desc: "蛋白质和蔬菜都够，清爽但不会寡淡。",
+        tags: ["牛肉", "西兰花", "高蛋白"],
+        ingredients: ["牛肉片 180g", "西兰花 1 颗", "蒜片", "生抽、蚝油", "黑胡椒、淀粉"],
+        steps: ["牛肉用生抽、黑胡椒和淀粉腌 10 分钟。", "西兰花焯水 1 分钟。", "热锅快炒牛肉至变色。", "加入蒜片和西兰花。", "加蚝油翻匀出锅。"]
+      },
+      {
+        id: "curry-chicken",
+        name: "咖喱鸡肉饭",
+        category: "一锅出",
+        time: "35 分钟",
+        difficulty: "简单",
+        heat: "微辣",
+        image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=1200&q=80",
+        desc: "浓郁咖喱汁配米饭，适合想吃暖一点、香一点的时候。",
+        tags: ["鸡肉", "土豆", "胡萝卜", "咖喱"],
+        ingredients: ["鸡腿肉 250g", "土豆 1 个", "胡萝卜 1 根", "洋葱半个", "咖喱块 2 块"],
+        steps: ["鸡肉、土豆、胡萝卜切块，洋葱切丝。", "锅中炒香洋葱和鸡肉。", "加入土豆胡萝卜和热水。", "煮到土豆软后关火放咖喱块。", "重新小火煮浓，配米饭。"]
+      },
+      {
+        id: "bok-choy",
+        name: "蒜蓉小青菜",
+        category: "素菜",
+        time: "10 分钟",
+        difficulty: "简单",
+        heat: "不辣",
+        image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
+        desc: "清口配菜，适合搭配偏肉的主菜。",
+        tags: ["青菜", "蒜蓉", "清淡"],
+        ingredients: ["小青菜 300g", "蒜末", "盐", "少量糖", "食用油"],
+        steps: ["青菜洗净沥干。", "热锅冷油炒香蒜末。", "下青菜大火快炒。", "加盐和少量糖调味。", "青菜刚断生就出锅。"]
+      }
+    ];
+
+    const categories = ["全部", "下饭菜", "快手", "清爽", "重口", "一锅出", "健身", "素菜"];
+    const categoryNotes = {
+      "下饭菜": "米饭友好，适合想吃得满足的一餐。",
+      "快手": "准备和烹饪时间短，工作日中午更省心。",
+      "清爽": "口味更轻，适合不想吃得太重的时候。",
+      "重口": "香、辣、酸甜更明显，拌饭能力强。",
+      "一锅出": "主食和菜一起解决，备餐压力小。",
+      "健身": "蛋白质和蔬菜比例更高。",
+      "素菜": "清口配菜，也可以和主菜搭配。"
+    };
+    const selected = new Set(JSON.parse(localStorage.getItem("lunch-picks") || "[]"));
+    const noteInput = document.querySelector("#lunchNote");
+    let activeCategory = "全部";
+    let query = "";
+
+    const grid = document.querySelector("#dishGrid");
+    const selectedList = document.querySelector("#selectedList");
+    const historyList = document.querySelector("#historyList");
+    const chips = document.querySelector("#filterChips");
+    const toast = document.querySelector("#toast");
+    const modal = document.querySelector("#recipeModal");
+
+    function savePicks() {
+      localStorage.setItem("lunch-picks", JSON.stringify([...selected]));
+    }
+
+    function getHistory() {
+      return JSON.parse(localStorage.getItem("lunch-history") || "[]");
+    }
+
+    function saveHistory(history) {
+      localStorage.setItem("lunch-history", JSON.stringify(history));
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function dishMatches(dish) {
+      const text = [dish.name, dish.category, dish.heat, ...dish.tags, ...dish.ingredients].join(" ");
+      const categoryOk = activeCategory === "全部" || dish.category === activeCategory;
+      const searchOk = !query || text.toLowerCase().includes(query.toLowerCase());
+      return categoryOk && searchOk;
+    }
+
+    function fallbackImage(name, category) {
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 675">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0" stop-color="#fff7e8"/>
+              <stop offset="1" stop-color="#dceadf"/>
+            </linearGradient>
+          </defs>
+          <rect width="900" height="675" fill="url(#g)"/>
+          <circle cx="706" cy="151" r="82" fill="#f2c94c" opacity=".7"/>
+          <ellipse cx="450" cy="460" rx="250" ry="66" fill="#7a4f32" opacity=".16"/>
+          <path d="M204 302c0-98 110-177 246-177s246 79 246 177H204z" fill="#fffdf7"/>
+          <ellipse cx="450" cy="302" rx="246" ry="79" fill="#fff"/>
+          <path d="M220 318c33 112 117 172 230 172s197-60 230-172c-56 36-137 58-230 58s-174-22-230-58z" fill="#e7efe8"/>
+          <circle cx="355" cy="281" r="48" fill="#d94b2f"/>
+          <circle cx="462" cy="258" r="52" fill="#f2c94c"/>
+          <circle cx="553" cy="294" r="45" fill="#2f6f4e"/>
+          <text x="450" y="575" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="44" font-weight="700" fill="#24221f">${name}</text>
+          <text x="450" y="625" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="26" fill="#6d6861">${category}</text>
+        </svg>`;
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    }
+
+    function imageMarkup(dish, extra = "") {
+      const fallback = fallbackImage(dish.name, dish.category);
+      return `<img src="${dish.image}" alt="${dish.name}" ${extra} onerror="this.onerror=null;this.src='${fallback}'" />`;
+    }
+
+    function renderChips() {
+      chips.innerHTML = categories.map(category => `
+        <button class="chip ${category === activeCategory ? "active" : ""}" type="button" data-category="${category}">
+          ${category}
+        </button>
+      `).join("");
+    }
+
+    function renderGrid() {
+      const visible = dishes.filter(dishMatches);
+      const groups = categories
+        .filter(category => category !== "全部")
+        .map(category => ({
+          category,
+          items: visible.filter(dish => dish.category === category)
+        }))
+        .filter(group => group.items.length);
+
+      grid.innerHTML = groups.map(group => `
+        <section class="category-section" aria-label="${group.category}">
+          <div class="category-head">
+            <div>
+              <h3>${group.category}</h3>
+              <p>${categoryNotes[group.category] || "按口味和做法归类，方便快速决定今天吃什么。"}</p>
+            </div>
+            <span class="category-count">${group.items.length} 道</span>
+          </div>
+          <div class="grid">
+            ${group.items.map(dish => `
+        <article class="dish-card">
+          <div class="dish-image">
+            ${imageMarkup(dish, "loading=\"lazy\"")}
+            <div class="badge-row">
+              <span class="badge">${dish.category}</span>
+              <span class="badge">${dish.time}</span>
+              <span class="badge">${dish.heat}</span>
+            </div>
+          </div>
+          <div class="dish-body">
+            <div class="dish-title">
+              <h3>${dish.name}</h3>
+              <span class="heat">${dish.heat}</span>
+            </div>
+            <p>${dish.desc}</p>
+            <div class="meta">${dish.tags.slice(0, 3).map(tag => `<span>${tag}</span>`).join("")}</div>
+            <div class="card-actions">
+              <button type="button" data-recipe="${dish.id}">看菜谱</button>
+              <button type="button" class="pick" data-pick="${dish.id}">${selected.has(dish.id) ? "已加入" : "加入午餐"}</button>
+            </div>
+          </div>
+        </article>
+            `).join("")}
+          </div>
+        </section>
+      `).join("") || `<div class="empty-state">没有找到匹配的菜，换个关键词试试。</div>`;
+    }
+
+    function renderSelected() {
+      const picked = dishes.filter(dish => selected.has(dish.id));
+      selectedList.innerHTML = picked.length ? picked.map(dish => `
+        <div class="selected-item">
+          ${imageMarkup(dish)}
+          <div>
+            <strong>${dish.name}</strong>
+            <span>${dish.category} · ${dish.time} · ${dish.heat}</span>
+          </div>
+          <button class="remove-btn" type="button" aria-label="移除 ${dish.name}" data-remove="${dish.id}">×</button>
+        </div>
+      `).join("") : `<div class="empty-state">还没有选择。她点喜欢的菜后，这里会变成今天的午饭候选清单。</div>`;
+    }
+
+    function getTodayMenuName() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return `${year}年${month}月${day}日菜单`;
+    }
+
+    function saveTodayMenu() {
+      const picked = dishes.filter(dish => selected.has(dish.id));
+      if (!picked.length) {
+        showToast("先加入至少一道菜，再保存菜单");
+        return;
+      }
+
+      const name = getTodayMenuName();
+      const entry = {
+        id: name,
+        name,
+        savedAt: new Date().toISOString(),
+        note: noteInput.value.trim(),
+        dishes: picked.map(dish => ({
+          id: dish.id,
+          name: dish.name,
+          category: dish.category,
+          heat: dish.heat
+        }))
+      };
+      const history = getHistory();
+      const existingIndex = history.findIndex(item => item.id === entry.id);
+      if (existingIndex >= 0) {
+        history[existingIndex] = entry;
+      } else {
+        history.unshift(entry);
+      }
+      saveHistory(history);
+      renderHistory();
+      showToast(`${name} 已保存`);
+    }
+
+    function renderHistory() {
+      const history = getHistory();
+      historyList.innerHTML = history.length ? history.map(entry => `
+        <details class="history-item">
+          <summary>${escapeHtml(entry.name)}</summary>
+          <ul>
+            ${entry.dishes.map(dish => `<li>${escapeHtml(dish.name)} · ${escapeHtml(dish.category)} · ${escapeHtml(dish.heat)}</li>`).join("")}
+          </ul>
+          ${entry.note ? `<p class="history-note">备注：${escapeHtml(entry.note)}</p>` : ""}
+        </details>
+      `).join("") : `<div class="empty-state">还没有保存过菜单。保存后会按日期留在这里，方便回看吃过什么。</div>`;
+    }
+
+    function setFeatured(dish) {
+      const featuredImage = document.querySelector("#featuredImage");
+      featuredImage.onerror = () => {
+        featuredImage.onerror = null;
+        featuredImage.src = fallbackImage(dish.name, dish.category);
+      };
+      featuredImage.src = dish.image;
+      featuredImage.alt = dish.name;
+      document.querySelector("#featuredName").textContent = dish.name;
+      document.querySelector("#featuredDesc").textContent = dish.desc;
+    }
+
+    function openRecipe(id) {
+      const dish = dishes.find(item => item.id === id);
+      if (!dish) return;
+      const modalImage = document.querySelector("#modalImage");
+      modalImage.onerror = () => {
+        modalImage.onerror = null;
+        modalImage.src = fallbackImage(dish.name, dish.category);
+      };
+      modalImage.src = dish.image;
+      modalImage.alt = dish.name;
+      document.querySelector("#modalTitle").textContent = dish.name;
+      document.querySelector("#modalDesc").textContent = dish.desc;
+      document.querySelector("#modalMeta").innerHTML = [dish.category, dish.time, dish.difficulty, dish.heat].map(item => `<span>${item}</span>`).join("");
+      document.querySelector("#modalIngredients").innerHTML = dish.ingredients.map(item => `<li>${item}</li>`).join("");
+      document.querySelector("#modalSteps").innerHTML = dish.steps.map(item => `<li>${item}</li>`).join("");
+      modal.classList.add("open");
+    }
+
+    function addPick(id) {
+      const dish = dishes.find(item => item.id === id);
+      if (!dish) return;
+      selected.add(id);
+      savePicks();
+      renderSelected();
+      renderGrid();
+      setFeatured(dish);
+      showToast(`${dish.name} 已加入今天午餐`);
+    }
+
+    function removePick(id) {
+      selected.delete(id);
+      savePicks();
+      renderSelected();
+      renderGrid();
+    }
+
+    function initDate() {
+      const formatter = new Intl.DateTimeFormat("zh-CN", { month: "long", day: "numeric", weekday: "long" });
+      document.querySelector("#todayText").textContent = formatter.format(new Date());
+    }
+
+    chips.addEventListener("click", event => {
+      const button = event.target.closest("[data-category]");
+      if (!button) return;
+      activeCategory = button.dataset.category;
+      renderChips();
+      renderGrid();
+    });
+
+    grid.addEventListener("click", event => {
+      const recipe = event.target.closest("[data-recipe]");
+      const pick = event.target.closest("[data-pick]");
+      if (recipe) openRecipe(recipe.dataset.recipe);
+      if (pick) addPick(pick.dataset.pick);
+    });
+
+    selectedList.addEventListener("click", event => {
+      const remove = event.target.closest("[data-remove]");
+      if (remove) removePick(remove.dataset.remove);
+    });
+
+    document.querySelector("#searchInput").addEventListener("input", event => {
+      query = event.target.value.trim();
+      renderGrid();
+    });
+
+    document.querySelector("#randomPick").addEventListener("click", () => {
+      const pool = dishes.filter(dishMatches);
+      const dish = pool[Math.floor(Math.random() * pool.length)] || dishes[0];
+      addPick(dish.id);
+    });
+
+    document.querySelector("#clearPicks").addEventListener("click", () => {
+      selected.clear();
+      savePicks();
+      renderSelected();
+      renderGrid();
+      showToast("今天的候选清单已清空");
+    });
+
+    document.querySelector("#saveMenu").addEventListener("click", saveTodayMenu);
+
+    document.querySelector("#clearHistory").addEventListener("click", () => {
+      saveHistory([]);
+      renderHistory();
+      showToast("已吃菜单记录已清空");
+    });
+
+    document.querySelector("#showAll").addEventListener("click", () => {
+      activeCategory = "全部";
+      query = "";
+      document.querySelector("#searchInput").value = "";
+      renderChips();
+      renderGrid();
+    });
+
+    document.querySelector("#closeModal").addEventListener("click", () => modal.classList.remove("open"));
+    modal.addEventListener("click", event => {
+      if (event.target === modal) modal.classList.remove("open");
+    });
+    window.addEventListener("keydown", event => {
+      if (event.key === "Escape") modal.classList.remove("open");
+    });
+
+    noteInput.value = localStorage.getItem("lunch-note") || "";
+    noteInput.addEventListener("input", () => localStorage.setItem("lunch-note", noteInput.value));
+
+    initDate();
+    renderChips();
+    renderSelected();
+    renderHistory();
+    renderGrid();
+  </script>
+</body>
+</html>
