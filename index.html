@@ -596,6 +596,50 @@
       color: var(--muted);
       line-height: 1.65;
       font-size: 14px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .source-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: var(--radius);
+      background: #fae8e5;
+      color: var(--red);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .modal-thumbs {
+      position: absolute;
+      bottom: 12px;
+      left: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: calc(100% - 28px);
+    }
+
+    .modal-thumbs img {
+      width: 62px;
+      height: 46px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid rgba(255, 255, 255, .7);
+      opacity: .85;
+      transition: opacity .15s ease, border-color .15s ease;
+    }
+
+    .modal-thumbs img.active,
+    .modal-thumbs img:hover {
+      border-color: var(--green);
+      opacity: 1;
     }
 
     .meta {
@@ -855,7 +899,7 @@
     <section class="filters" aria-label="筛选菜单">
       <label class="search-wrap">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="searchInput" type="search" placeholder="搜菜名、食材、口味" />
+        <input id="searchInput" type="search" placeholder="搜菜名、食材、口味、博主" />
       </label>
       <div class="chips" id="filterChips"></div>
     </section>
@@ -864,7 +908,7 @@
       <div class="menu-head">
         <div>
           <h2>菜谱和图片</h2>
-          <p>点“加入午餐”放进今天的候选清单，点“看菜谱”可以看到食材和步骤。</p>
+          <p>图片与菜谱要点都来自小红书原帖：点“看菜谱”查看，弹窗里可“打开原笔记”看完整视频，点“加入午餐”放进候选清单。</p>
         </div>
         <button class="ghost-btn" id="showAll" type="button">
           <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
@@ -879,6 +923,7 @@
     <article class="modal-card">
       <div class="modal-hero">
         <img id="modalImage" src="" alt="" />
+        <div class="modal-thumbs" id="modalThumbs"></div>
         <button class="modal-close" id="closeModal" type="button" aria-label="关闭菜谱">
           <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
@@ -888,11 +933,12 @@
           <h2 id="modalTitle"></h2>
           <p id="modalDesc"></p>
           <div class="meta" id="modalMeta"></div>
+          <div id="modalLink" style="margin-top:14px"></div>
         </div>
         <div class="recipe-block">
-          <h3>食材</h3>
+          <h3 id="modalIngHead">食材</h3>
           <ul id="modalIngredients"></ul>
-          <h3 style="margin-top:18px">做法</h3>
+          <h3 id="modalStepsHead" style="margin-top:18px">做法</h3>
           <ol id="modalSteps"></ol>
         </div>
       </div>
@@ -901,12 +947,13 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="assets/collected-dishes.js"></script>
   <script>
-    const dishes = [
+    const recipes = [
       {
         id: "tomato-beef",
         name: "番茄牛腩",
-        category: "下饭菜",
+        category: "牛羊肉",
         time: "70 分钟",
         difficulty: "中等",
         heat: "不辣",
@@ -919,7 +966,7 @@
       {
         id: "cola-wings",
         name: "可乐鸡翅",
-        category: "下饭菜",
+        category: "鸡肉",
         time: "30 分钟",
         difficulty: "简单",
         heat: "不辣",
@@ -932,7 +979,7 @@
       {
         id: "shrimp-egg",
         name: "虾仁滑蛋",
-        category: "清爽",
+        category: "鱼虾海鲜",
         time: "15 分钟",
         difficulty: "简单",
         heat: "不辣",
@@ -945,7 +992,7 @@
       {
         id: "pork-pepper",
         name: "青椒肉丝",
-        category: "快手",
+        category: "猪肉",
         time: "20 分钟",
         difficulty: "简单",
         heat: "微辣",
@@ -958,7 +1005,7 @@
       {
         id: "mapo-tofu",
         name: "麻婆豆腐",
-        category: "重口",
+        category: "蔬菜豆腐",
         time: "25 分钟",
         difficulty: "中等",
         heat: "中辣",
@@ -971,7 +1018,7 @@
       {
         id: "teriyaki-salmon",
         name: "照烧三文鱼",
-        category: "清爽",
+        category: "鱼虾海鲜",
         time: "25 分钟",
         difficulty: "简单",
         heat: "不辣",
@@ -984,7 +1031,7 @@
       {
         id: "mushroom-chicken",
         name: "香菇鸡腿焖饭",
-        category: "一锅出",
+        category: "主食面点",
         time: "45 分钟",
         difficulty: "简单",
         heat: "不辣",
@@ -997,7 +1044,7 @@
       {
         id: "cold-noodle",
         name: "鸡丝凉面",
-        category: "清爽",
+        category: "主食面点",
         time: "25 分钟",
         difficulty: "简单",
         heat: "微辣",
@@ -1010,7 +1057,7 @@
       {
         id: "eggplant",
         name: "鱼香茄子",
-        category: "重口",
+        category: "蔬菜豆腐",
         time: "30 分钟",
         difficulty: "中等",
         heat: "微辣",
@@ -1023,7 +1070,7 @@
       {
         id: "broccoli-beef",
         name: "西兰花牛肉",
-        category: "健身",
+        category: "牛羊肉",
         time: "25 分钟",
         difficulty: "简单",
         heat: "不辣",
@@ -1036,7 +1083,7 @@
       {
         id: "curry-chicken",
         name: "咖喱鸡肉饭",
-        category: "一锅出",
+        category: "主食面点",
         time: "35 分钟",
         difficulty: "简单",
         heat: "微辣",
@@ -1049,7 +1096,7 @@
       {
         id: "bok-choy",
         name: "蒜蓉小青菜",
-        category: "素菜",
+        category: "蔬菜豆腐",
         time: "10 分钟",
         difficulty: "简单",
         heat: "不辣",
@@ -1061,15 +1108,23 @@
       }
     ];
 
-    const categories = ["全部", "下饭菜", "快手", "清爽", "重口", "一锅出", "健身", "素菜"];
+    // 小红书收藏菜谱（午饭 / 减脂期晚餐 / 养生 / 小吃），数据在 assets/collected-dishes.js
+    const dishes = recipes.concat(typeof collectedDishes === "undefined" ? [] : collectedDishes);
+
+    const categories = ["全部", "牛羊肉", "猪肉", "鸡肉", "鱼虾海鲜", "蛋类", "蔬菜豆腐", "主食面点", "汤羹粥品", "甜品小吃", "饮品", "厨房技巧", "杂项合集"];
     const categoryNotes = {
-      "下饭菜": "米饭友好，适合想吃得满足的一餐。",
-      "快手": "准备和烹饪时间短，工作日中午更省心。",
-      "清爽": "口味更轻，适合不想吃得太重的时候。",
-      "重口": "香、辣、酸甜更明显，拌饭能力强。",
-      "一锅出": "主食和菜一起解决，备餐压力小。",
-      "健身": "蛋白质和蔬菜比例更高。",
-      "素菜": "清口配菜，也可以和主菜搭配。"
+      "牛羊肉": "牛肉、羊肉和肥牛料理，炖烧爆炒都有。",
+      "猪肉": "猪肉、排骨和叉烧，家常下饭为主。",
+      "鸡肉": "鸡腿、鸡翅、鸡胸的做法，蒸焖炒炸都有。",
+      "鱼虾海鲜": "鱼虾蟹贝做法，清蒸白灼为主。",
+      "蛋类": "各类炒蛋蒸蛋，快手又下饭。",
+      "蔬菜豆腐": "蔬菜、豆腐和菌菇素菜，清口搭配。",
+      "主食面点": "米饭、面条、包子和馒头，一餐的主食。",
+      "汤羹粥品": "咸汤、甜汤和粥品，暖胃这里都有。",
+      "甜品小吃": "免烤箱甜品与广式糖水小吃。",
+      "饮品": "自制饮品和补气血食疗方。",
+      "厨房技巧": "去腥、储存等厨房科普和技巧。",
+      "杂项合集": "多菜合集、连载与暂未归类的收藏。"
     };
     const selected = new Set(JSON.parse(localStorage.getItem("lunch-picks") || "[]"));
     const noteInput = document.querySelector("#lunchNote");
@@ -1112,13 +1167,13 @@
     }
 
     function dishMatches(dish) {
-      const text = [dish.name, dish.category, dish.heat, ...dish.tags, ...dish.ingredients].join(" ");
+      const text = [dish.name, dish.category, dish.heat || "", dish.source || "", ...(dish.tags || []), ...(dish.ingredients || [])].join(" ");
       const categoryOk = activeCategory === "全部" || dish.category === activeCategory;
       const searchOk = !query || text.toLowerCase().includes(query.toLowerCase());
       return categoryOk && searchOk;
     }
 
-    function fallbackImage(name, category) {
+    function fallbackImage(name, category, showLabel = true) {
       const svg = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 675">
           <defs>
@@ -1136,15 +1191,17 @@
           <circle cx="355" cy="281" r="48" fill="#d94b2f"/>
           <circle cx="462" cy="258" r="52" fill="#f2c94c"/>
           <circle cx="553" cy="294" r="45" fill="#2f6f4e"/>
+          ${showLabel ? `
           <text x="450" y="575" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="44" font-weight="700" fill="#24221f">${name}</text>
-          <text x="450" y="625" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="26" fill="#6d6861">${category}</text>
+          <text x="450" y="625" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="26" fill="#6d6861">${category}</text>` : ""}
         </svg>`;
       return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
     }
 
     function imageMarkup(dish, extra = "") {
       const fallback = fallbackImage(dish.name, dish.category);
-      return `<img src="${dish.image}" alt="${dish.name}" ${extra} onerror="this.onerror=null;this.src='${fallback}'" />`;
+      const onerror = dish.image ? ` onerror="this.onerror=null;this.src='${fallback}'"` : "";
+      return `<img src="${dish.image || fallback}" alt="${dish.name}" ${extra}${onerror} />`;
     }
 
     function renderChips() {
@@ -1175,30 +1232,34 @@
             <span class="category-count">${group.items.length} 道</span>
           </div>
           <div class="grid">
-            ${group.items.map(dish => `
+            ${group.items.map(dish => {
+              const badges = dish.url
+                ? [`<span class="badge">${dish.category}</span>`, dish.likes ? `<span class="badge">❤ ${dish.likes}</span>` : "", dish.ntype ? `<span class="badge">${dish.ntype}</span>` : ""].filter(Boolean).join("")
+                : `<span class="badge">${dish.category}</span><span class="badge">${dish.time}</span><span class="badge">${dish.heat}</span>`;
+              const cardDesc = dish.desc || "";
+              const heatBadge = dish.heat ? `<span class="heat">${dish.heat}</span>` : "";
+              const metaTags = (dish.tags || []).slice(0, 3).map(tag => `<span>${tag}</span>`).join("");
+              const recipeButton = `<button type="button" data-recipe="${dish.id}">看菜谱</button>`;
+              return `
         <article class="dish-card">
           <div class="dish-image">
             ${imageMarkup(dish, "loading=\"lazy\"")}
-            <div class="badge-row">
-              <span class="badge">${dish.category}</span>
-              <span class="badge">${dish.time}</span>
-              <span class="badge">${dish.heat}</span>
-            </div>
+            <div class="badge-row">${badges}</div>
           </div>
           <div class="dish-body">
             <div class="dish-title">
               <h3>${dish.name}</h3>
-              <span class="heat">${dish.heat}</span>
+              ${heatBadge}
             </div>
-            <p>${dish.desc}</p>
-            <div class="meta">${dish.tags.slice(0, 3).map(tag => `<span>${tag}</span>`).join("")}</div>
+            <p>${cardDesc}</p>
+            <div class="meta">${metaTags}</div>
             <div class="card-actions">
-              <button type="button" data-recipe="${dish.id}">看菜谱</button>
+              ${recipeButton}
               <button type="button" class="pick" data-pick="${dish.id}">${selected.has(dish.id) ? "已加入" : "加入午餐"}</button>
             </div>
           </div>
-        </article>
-            `).join("")}
+        </article>`;
+            }).join("")}
           </div>
         </section>
       `).join("") || `<div class="empty-state">没有找到匹配的菜，换个关键词试试。</div>`;
@@ -1211,7 +1272,7 @@
           ${imageMarkup(dish)}
           <div>
             <strong>${dish.name}</strong>
-            <span>${dish.category} · ${dish.time} · ${dish.heat}</span>
+            <span>${[dish.category, dish.time, dish.heat, dish.source ? "@" + dish.source : "", dish.likes ? "❤ " + dish.likes : ""].filter(Boolean).join(" · ")}</span>
           </div>
           <button class="remove-btn" type="button" aria-label="移除 ${dish.name}" data-remove="${dish.id}">×</button>
         </div>
@@ -1243,7 +1304,7 @@
           id: dish.id,
           name: dish.name,
           category: dish.category,
-          heat: dish.heat
+          heat: dish.heat || ""
         }))
       };
       const history = getHistory();
@@ -1264,7 +1325,7 @@
         <details class="history-item">
           <summary>${escapeHtml(entry.name)}</summary>
           <ul>
-            ${entry.dishes.map(dish => `<li>${escapeHtml(dish.name)} · ${escapeHtml(dish.category)} · ${escapeHtml(dish.heat)}</li>`).join("")}
+            ${entry.dishes.map(dish => `<li>${escapeHtml([dish.name, dish.category, dish.heat].filter(Boolean).join(" · "))}</li>`).join("")}
           </ul>
           ${entry.note ? `<p class="history-note">备注：${escapeHtml(entry.note)}</p>` : ""}
         </details>
@@ -1273,11 +1334,11 @@
 
     function setFeatured(dish) {
       const featuredImage = document.querySelector("#featuredImage");
-      featuredImage.onerror = () => {
+      featuredImage.onerror = dish.image ? () => {
         featuredImage.onerror = null;
-        featuredImage.src = fallbackImage(dish.name, dish.category);
-      };
-      featuredImage.src = dish.image;
+        featuredImage.src = fallbackImage(dish.name, dish.category, false);
+      } : null;
+      featuredImage.src = dish.image || fallbackImage(dish.name, dish.category, false);
       featuredImage.alt = dish.name;
       document.querySelector("#featuredName").textContent = dish.name;
       document.querySelector("#featuredDesc").textContent = dish.desc;
@@ -1287,17 +1348,46 @@
       const dish = dishes.find(item => item.id === id);
       if (!dish) return;
       const modalImage = document.querySelector("#modalImage");
-      modalImage.onerror = () => {
+      const imgs = (dish.images && dish.images.length ? dish.images : [dish.image]).filter(Boolean);
+      modalImage.onerror = imgs[0] && dish.image ? () => {
         modalImage.onerror = null;
         modalImage.src = fallbackImage(dish.name, dish.category);
-      };
-      modalImage.src = dish.image;
+      } : null;
+      modalImage.src = imgs[0] || fallbackImage(dish.name, dish.category);
       modalImage.alt = dish.name;
+      const thumbs = document.querySelector("#modalThumbs");
+      thumbs.innerHTML = imgs.length > 1
+        ? imgs.map((src, i) => `<img src="${src}" data-idx="${i}" class="${i === 0 ? "active" : ""}" alt="图${i + 1}">`).join("")
+        : "";
+      thumbs.onclick = event => {
+        const im = event.target.closest("img[data-idx]");
+        if (!im) return;
+        modalImage.src = imgs[Number(im.dataset.idx)];
+        modalImage.alt = dish.name + " 图" + (Number(im.dataset.idx) + 1);
+        thumbs.querySelectorAll("img").forEach(t => t.classList.remove("active"));
+        im.classList.add("active");
+      };
       document.querySelector("#modalTitle").textContent = dish.name;
-      document.querySelector("#modalDesc").textContent = dish.desc;
-      document.querySelector("#modalMeta").innerHTML = [dish.category, dish.time, dish.difficulty, dish.heat].map(item => `<span>${item}</span>`).join("");
-      document.querySelector("#modalIngredients").innerHTML = dish.ingredients.map(item => `<li>${item}</li>`).join("");
-      document.querySelector("#modalSteps").innerHTML = dish.steps.map(item => `<li>${item}</li>`).join("");
+      document.querySelector("#modalDesc").textContent = dish.desc || "";
+      const metaParts = dish.url
+        ? [dish.category, "@" + dish.source, "❤ " + dish.likes, dish.ntype]
+        : [dish.category, dish.time, dish.difficulty, dish.heat];
+      document.querySelector("#modalMeta").innerHTML = metaParts.map(item => `<span>${item}</span>`).join("");
+      const ing = dish.ingredients || [];
+      const stp = dish.steps || [];
+      const ingHead = document.querySelector("#modalIngHead");
+      const ingList = document.querySelector("#modalIngredients");
+      ingHead.style.display = ing.length ? "" : "none";
+      ingList.style.display = ing.length ? "" : "none";
+      ingList.innerHTML = ing.map(item => `<li>${item}</li>`).join("");
+      const stpHead = document.querySelector("#modalStepsHead");
+      const stpList = document.querySelector("#modalSteps");
+      stpHead.style.display = stp.length ? "" : "none";
+      stpList.style.display = stp.length ? "" : "none";
+      stpList.innerHTML = stp.map(item => `<li>${item}</li>`).join("");
+      document.querySelector("#modalLink").innerHTML = dish.url
+        ? `<a class="source-link" href="${dish.url}" target="_blank" rel="noopener">打开小红书原笔记 ↗</a>`
+        : "";
       modal.classList.add("open");
     }
 
