@@ -983,8 +983,12 @@
         <div class="history-box">
           <div class="history-title">
             <h3>已吃菜单</h3>
-            <button class="ghost-btn" id="clearHistory" type="button">清空记录</button>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="ghost-btn" id="syncRefresh" type="button">刷新同步</button>
+              <button class="ghost-btn" id="clearHistory" type="button">清空记录</button>
+            </div>
           </div>
+          <p class="history-note" id="syncStatus">云端同步：加载中…</p>
           <div class="history-list" id="historyList"></div>
         </div>
       </aside>
@@ -1300,6 +1304,133 @@
       localStorage.setItem("lunch-history", JSON.stringify(history));
     }
 
+    // —— 云端共享同步：所有人保存的菜单进同一个云端列表，互相可见 ——
+    // 存储：textdb.online 匿名 KV（读接口带 CORS；写接口用 GET 信标绕过跨域限制）
+    const SYNC_BASE = "https://textdb.online/";
+    const SYNC_KEY = "lunchmenu-shared-menus-7f3k9d2m";
+    let sharedMenus = [];
+    let lastSyncAt = null;
+
+    function getVisitorId() {
+      let v = localStorage.getItem("lunch-visitor");
+      if (!v) {
+        v = "访客" + Math.random().toString(36).slice(2, 6);
+        localStorage.setItem("lunch-visitor", v);
+      }
+      return v;
+    }
+
+    async function syncReadKey(key) {
+      const r = await fetch(SYNC_BASE + key + "?t=" + Date.now());
+      const text = await r.text();
+      if (!text.trim()) return null;
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        return null;
+      }
+    }
+
+    async function syncReadMenus() {
+      // 兼容分片：主 key 可能存 {menus}（单片）或 {__shards:[key...]}（多片）
+      const main = await syncReadKey(SYNC_KEY);
+      if (!main) return [];
+      if (Array.isArray(main.menus)) return main.menus;
+      const shardKeys = main.__shards || main.shards;
+      if (Array.isArray(shardKeys)) {
+        const all = [];
+        for (const sk of shardKeys) {
+          const part = await syncReadKey(sk);
+          if (part && Array.isArray(part.menus)) all.push(...part.menus);
+        }
+        return all;
+      }
+      return [];
+    }
+
+    function mergeMenus(local, remote) {
+      const map = new Map();
+      for (const m of remote) map.set(m.syncId || m.id, m);
+      for (const m of local) map.set(m.syncId || m.id, m);
+      return [...map.values()].sort((a, b) => (b.savedAt || "").localeCompare(a.savedAt || ""));
+    }
+
+    function updateSyncStatus(text) {
+      const el = document.querySelector("#syncStatus");
+      if (el) el.textContent = text;
+    }
+
+    // GET 信标写入（跨域限制下最可靠的写法）：URL 过长自动分片
+    async function beaconWriteKey(key, menus) {
+      const value = JSON.stringify({ menus });
+      const url = SYNC_BASE + "update/?key=" + encodeURIComponent(key) + "&value=" + encodeURIComponent(value);
+      if (url.length > 7500) return false;
+      await new Promise(res => {
+        const img = new Image();
+        img.onload = () => res();
+        img.onerror = () => res();
+        img.src = url;
+        setTimeout(res, 4000);
+      });
+      return true;
+    }
+
+    async function syncWriteAll(menus) {
+      const cost = encodeURIComponent(JSON.stringify({ menus })).length;
+      if (cost <= 6500) {
+        return await beaconWriteKey(SYNC_KEY, menus);
+      }
+      // 超长自动分片：写入 -p0/-p1/... 子键，主键记分片清单
+      const chunks = [[]];
+      for (const m of menus) {
+        const last = chunks[chunks.length - 1];
+        const lastCost = last.length ? encodeURIComponent(JSON.stringify({ menus: last })).length : 0;
+        const mCost = encodeURIComponent(JSON.stringify({ menus: [m] })).length;
+        if (last.length && lastCost + mCost > 6000) chunks.push([]);
+        chunks[chunks.length - 1].push(m);
+      }
+      const shardKeys = chunks.map((_, i) => SYNC_KEY + "-p" + i);
+      for (let i = 0; i < chunks.length; i++) {
+        if (!(await beaconWriteKey(shardKeys[i], chunks[i]))) return false;
+      }
+      return await beaconWriteKey(SYNC_KEY, [{ __shards: shardKeys }]);
+    }
+
+    function updateSyncStatus(text) {
+      const el = document.querySelector("#syncStatus");
+      if (el) el.textContent = text;
+    }
+
+    async function syncRefresh(pushLocal) {
+      try {
+        let remote = await syncReadMenus();
+        if (pushLocal) {
+          const merged = mergeMenus(getHistory(), remote);
+          const wrote = await syncWriteAll(merged);
+          if (wrote) {
+            const verified = await syncReadMenus();
+            if (verified.length >= merged.length) remote = verified;
+          }
+        }
+        sharedMenus = mergeMenus(getHistory(), remote);
+        renderHistory();
+        lastSyncAt = new Date();
+        const n = sharedMenus.length;
+        updateSyncStatus(pushLocal
+          ? "云端已同步 " + n + " 份菜单 · 刚刚"
+          : "云端已有 " + n + " 份菜单 · " + lastSyncAt.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }) + " 刷新");
+        return true;
+      } catch (err) {
+        updateSyncStatus("云端同步暂不可用，菜单仅保存在本机");
+        return false;
+      }
+    }
+
+    document.querySelector("#syncRefresh").addEventListener("click", () => {
+      updateSyncStatus("正在同步…");
+      syncRefresh(true);
+    });
+
     function escapeHtml(value) {
       return String(value)
         .replaceAll("&", "&amp;")
@@ -1460,8 +1591,10 @@
       const name = getTodayMenuName();
       const entry = {
         id: name,
+        syncId: name + "#" + getVisitorId() + "#" + Date.now(),
         name,
         savedAt: new Date().toISOString(),
+        device: getVisitorId(),
         note: noteInput.value.trim(),
         dishes: picked.map(dish => ({
           id: dish.id,
@@ -1479,20 +1612,23 @@
       }
       saveHistory(history);
       renderHistory();
-      showToast(`${name} 已保存`);
+      showToast(`${name} 已保存，正在同步…`);
+      syncRefresh(true).then(ok => {
+        showToast(ok ? `${name} 已保存并同步到云端` : `${name} 已保存（云端暂不可用，仅存在本机）`);
+      });
     }
 
     function renderHistory() {
-      const history = getHistory();
-      historyList.innerHTML = history.length ? history.map(entry => `
+      const merged = mergeMenus(getHistory(), sharedMenus);
+      historyList.innerHTML = merged.length ? merged.map(entry => `
         <details class="history-item">
-          <summary>${escapeHtml(entry.name)}</summary>
+          <summary>${escapeHtml(entry.name)}${entry.device ? ` <span style="color:var(--muted);font-weight:400">· ${escapeHtml(entry.device)}</span>` : ""}</summary>
           <ul>
-            ${entry.dishes.map(dish => `<li>${escapeHtml([dish.name, dish.category, dish.heat].filter(Boolean).join(" · "))}</li>`).join("")}
+            ${(entry.dishes || []).map(dish => `<li>${escapeHtml(dish.name)} · ${escapeHtml(dish.category || "")}${dish.heat ? " · " + escapeHtml(dish.heat) : ""}</li>`).join("")}
           </ul>
           ${entry.note ? `<p class="history-note">备注：${escapeHtml(entry.note)}</p>` : ""}
         </details>
-      `).join("") : `<div class="empty-state">还没有保存过菜单。保存后会按日期留在这里，方便回看吃过什么。</div>`;
+      `).join("") : `<div class="empty-state">还没有保存过菜单。保存后会自动同步到云端，家人朋友保存的菜单你也能在这里看到。</div>`;
     }
 
     function setFeatured(dish) {
@@ -1697,6 +1833,8 @@
     renderSelected();
     renderHistory();
     renderGrid();
+    syncRefresh();
+    setInterval(() => syncRefresh(false), 60000);
   </script>
 </body>
 </html>
