@@ -397,6 +397,19 @@
       gap: 12px;
       align-items: center;
       margin-bottom: 18px;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(255, 250, 242, .96);
+      backdrop-filter: blur(10px);
+      padding: 12px 0;
+      box-shadow: 0 8px 20px rgba(54, 43, 31, .07);
+    }
+
+    .chip.spy {
+      border-color: var(--green);
+      color: var(--green);
+      font-weight: 600;
     }
 
     .search-wrap {
@@ -1030,7 +1043,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="assets/collected-dishes.js"></script>
+  <script src="assets/collected-dishes.js?v=4"></script>
   <script>
     const recipes = [
       {
@@ -1259,6 +1272,22 @@
       }
     }, 4500);
 
+    function sectionSpy() {
+      const chipEls = [...chips.querySelectorAll(".chip")];
+      if (activeCategory !== "全部") {
+        chipEls.forEach(ch => ch.classList.remove("spy"));
+        return;
+      }
+      const sections = [...document.querySelectorAll(".category-section")];
+      let current = null;
+      for (const sec of sections) {
+        if (sec.getBoundingClientRect().top <= 130) current = sec.dataset.cat;
+      }
+      chipEls.forEach(ch => ch.classList.toggle("spy", ch.dataset.category === current));
+    }
+
+    window.addEventListener("scroll", () => requestAnimationFrame(sectionSpy), { passive: true });
+
     function savePicks() {
       localStorage.setItem("lunch-picks", JSON.stringify([...selected]));
     }
@@ -1344,7 +1373,7 @@
         .filter(group => group.items.length);
 
       grid.innerHTML = groups.map(group => `
-        <section class="category-section" aria-label="${group.category}">
+        <section class="category-section" aria-label="${group.category}" data-cat="${group.category}">
           <div class="category-head">
             <div>
               <h3>${group.category}</h3>
@@ -1396,6 +1425,7 @@
         </section>
       `).join("") || `<div class="empty-state">没有找到匹配的菜，换个关键词试试。</div>`;
       observeCards();
+      sectionSpy();
     }
 
     function renderSelected() {
