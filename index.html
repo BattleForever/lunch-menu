@@ -827,6 +827,186 @@
     .modal-nav.prev { left: 12px; }
     .modal-nav.next { right: 12px; }
 
+    .menu-detail {
+      display: none;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 10px 0 60px;
+    }
+
+    body.detail-open #siteMain {
+      display: none;
+    }
+
+    body.detail-open .menu-detail {
+      display: block;
+    }
+
+    .detail-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .detail-head-text h2 {
+      margin: 0 0 6px;
+      font-size: 30px;
+    }
+
+    .detail-meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .detail-dish {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(54, 43, 31, .07);
+      padding: 16px;
+      display: flex;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .detail-dish-media {
+      width: 240px;
+      flex: none;
+    }
+
+    .detail-dish-media > img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+      background: #eee2d6;
+    }
+
+    .detail-thumbs {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .detail-thumbs img {
+      width: 54px;
+      height: 42px;
+      object-fit: cover;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      opacity: .8;
+    }
+
+    .detail-thumbs img.active {
+      border-color: var(--green);
+      opacity: 1;
+    }
+
+    .detail-dish-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .detail-dish-body h3 {
+      margin: 0 0 6px;
+      font-size: 22px;
+    }
+
+    .detail-dish-body h4 {
+      margin: 14px 0 6px;
+      font-size: 16px;
+    }
+
+    .detail-dish-body ul,
+    .detail-dish-body ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .detail-shopping {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 20px;
+    }
+
+    .detail-shopping h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .shopping-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 16px;
+    }
+
+    .shopping-list label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink);
+      font-size: 14px;
+      cursor: pointer;
+      line-height: 1.6;
+    }
+
+    .shopping-list input:checked + span {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .back-top {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      font-size: 18px;
+      display: none;
+      place-items: center;
+      box-shadow: var(--shadow);
+      z-index: 40;
+    }
+
+    .back-top.show {
+      display: grid;
+    }
+
+    .shown-count {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-left: 10px;
+    }
+
+    @media (max-width: 760px) {
+      .detail-dish {
+        flex-direction: column;
+      }
+      .detail-dish-media {
+        width: 100%;
+      }
+      .shopping-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .modal-content h2 {
       margin: 0 0 8px;
       font-size: 30px;
@@ -932,7 +1112,7 @@
   </style>
 </head>
 <body>
-  <main class="app">
+  <main class="app" id="siteMain">
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">
@@ -978,6 +1158,10 @@
               <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>
               保存今天菜单
             </button>
+            <button class="ghost-btn" id="viewCurrentMenu" type="button" hidden>
+              <svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              查看菜单详情
+            </button>
           </div>
         </div>
         <div class="history-box">
@@ -1005,7 +1189,7 @@
     <section aria-label="菜谱菜单">
       <div class="menu-head">
         <div>
-          <h2>菜谱和图片</h2>
+          <h2>菜谱和图片<span class="shown-count" id="shownCount"></span></h2>
           <p>图片与菜谱要点都来自小红书原帖：卡片图片会自动轮播（悬停暂停，可点箭头/圆点手动切换）；点“看菜谱”看图文做法和原笔记视频，点“加入午餐”放进候选清单。</p>
         </div>
         <button class="ghost-btn" id="showAll" type="button">
@@ -1016,6 +1200,24 @@
       <div class="category-stack" id="dishGrid"></div>
     </section>
   </main>
+
+  <section class="menu-detail" id="menuDetail" hidden>
+    <header class="detail-head">
+      <button class="ghost-btn" id="detailBack" type="button">‹ 返回菜单</button>
+      <div class="detail-head-text">
+        <h2 id="detailTitle"></h2>
+        <p class="detail-meta" id="detailMeta"></p>
+      </div>
+      <button class="ghost-btn" id="detailShare" type="button">复制分享链接</button>
+    </header>
+    <div id="detailDishes"></div>
+    <div class="detail-shopping">
+      <h3>🛒 购物清单（汇总所点菜的食材，买过的点一下勾掉）</h3>
+      <div class="shopping-list" id="shoppingList"></div>
+    </div>
+  </section>
+
+  <button class="back-top" id="backTop" type="button" aria-label="回到顶部">↑</button>
 
   <div class="modal" id="recipeModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <article class="modal-card">
@@ -1431,6 +1633,162 @@
       syncRefresh(true);
     });
 
+    // —— 菜单详情页：查看所点菜的食材/做法/图片/原视频，可分享链接 ——
+    const SHARE_BASE = "https://battleforever.github.io/lunch-menu/";
+    let detailEntry = null;
+
+    function buildMenuHash(entry) {
+      const payload = {
+        n: entry.name,
+        t: entry.savedAt || "",
+        d: entry.device || "",
+        note: entry.note || "",
+        items: (entry.dishes || []).map(d => d.id)
+      };
+      return "#menu=" + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(payload)))));
+    }
+
+    function decodeMenuHash(hash) {
+      try {
+        const payload = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(hash.replace("#menu=", ""))))));
+        const picked = (payload.items || []).map(id => dishes.find(d => d.id === id)).filter(Boolean);
+        if (!picked.length) return null;
+        return {
+          name: payload.n,
+          savedAt: payload.t,
+          device: payload.d,
+          note: payload.note,
+          dishes: picked.map(d => ({ id: d.id, name: d.name, category: d.category }))
+        };
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function dishDetailCard(dish) {
+      const imgs = (dish.images && dish.images.length ? dish.images : [dish.image]).filter(Boolean);
+      const ing = dish.ingredients || [];
+      const stp = dish.steps || [];
+      return `
+      <div class="detail-dish">
+        <div class="detail-dish-media">
+          <img src="${imgs[0]}" alt="${dish.name}" loading="lazy">
+          ${imgs.length > 1 ? `<div class="detail-thumbs">${imgs.map((s, i) => `<img src="${s}" data-dsrc="${s}" class="${i === 0 ? "active" : ""}" alt="图${i + 1}">`).join("")}</div>` : ""}
+        </div>
+        <div class="detail-dish-body">
+          <h3>${dish.name}</h3>
+          <div class="meta">${[dish.category, dish.source ? "@" + dish.source : "", dish.likes ? "❤ " + dish.likes : "", dish.time, dish.heat, dish.difficulty].filter(Boolean).map(item => `<span>${item}</span>`).join("")}</div>
+          ${ing.length ? `<h4>食材</h4><ul>${ing.map(x => `<li>${x}</li>`).join("")}</ul>` : `<p class="history-note">视频菜谱：用料在原笔记视频里。</p>`}
+          ${stp.length ? `<h4>做法</h4><ol>${stp.map(x => `<li>${x}</li>`).join("")}</ol>` : ""}
+          ${dish.url ? `<a class="source-link" href="${dish.url}" target="_blank" rel="noopener">打开小红书原笔记 ↗</a>` : ""}
+        </div>
+      </div>`;
+    }
+
+    function renderShoppingList(entry) {
+      const seen = new Set();
+      const list = [];
+      for (const it of entry.dishes || []) {
+        const d = dishes.find(x => x.id === it.id);
+        for (const ing of (d && d.ingredients) || []) {
+          const k = ing.trim();
+          if (k && !seen.has(k)) { seen.add(k); list.push(k); }
+        }
+      }
+      document.querySelector("#shoppingList").innerHTML = list.length
+        ? list.map(x => `<label><input type="checkbox"><span>${x}</span></label>`).join("")
+        : `<p class="history-note">所点菜谱没有文字食材清单（视频菜谱），去原笔记看用料。</p>`;
+    }
+
+    function renderMenuDetail() {
+      if (!detailEntry) return;
+      document.querySelector("#detailTitle").textContent = detailEntry.name;
+      const bits = [];
+      if (detailEntry.savedAt) {
+        const t = new Date(detailEntry.savedAt);
+        if (!isNaN(t)) bits.push("保存于 " + t.toLocaleString("zh-CN", { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }));
+      }
+      if (detailEntry.device) bits.push(detailEntry.device);
+      if (detailEntry.note) bits.push("备注：" + detailEntry.note);
+      document.querySelector("#detailMeta").textContent = bits.join(" · ") || "共 " + (detailEntry.dishes || []).length + " 道菜";
+      document.querySelector("#detailDishes").innerHTML = (detailEntry.dishes || []).map(it => {
+        const dish = dishes.find(d => d.id === it.id);
+        if (!dish) {
+          return `<div class="detail-dish"><div class="detail-dish-body"><h3>${it.name || "未知菜品"}</h3><p class="history-note">该菜谱在当前版本中不存在。</p></div></div>`;
+        }
+        return dishDetailCard(dish);
+      }).join("");
+      renderShoppingList(detailEntry);
+    }
+
+    function openMenuDetail(entry, push = true) {
+      detailEntry = entry;
+      renderMenuDetail();
+      menuDetail.hidden = false;
+      document.body.classList.add("detail-open");
+      window.scrollTo(0, 0);
+      if (push && location.hash.indexOf("#menu=") !== 0) {
+        history.pushState({ menuDetail: true }, "", buildMenuHash(entry));
+      }
+    }
+
+    function closeMenuDetail() {
+      document.body.classList.remove("detail-open");
+      menuDetail.hidden = true;
+      detailEntry = null;
+      if (location.hash.indexOf("#menu=") === 0) {
+        history.replaceState({}, "", location.pathname + location.search);
+      }
+    }
+
+    document.querySelector("#detailBack").addEventListener("click", closeMenuDetail);
+    document.querySelector("#detailShare").addEventListener("click", async () => {
+      if (!detailEntry) return;
+      const url = SHARE_BASE + buildMenuHash(detailEntry);
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast("链接已复制，发给家人朋友即可打开这份菜单");
+      } catch (err) {
+        window.prompt("复制以下链接发给家人朋友：", url);
+      }
+    });
+    document.querySelector("#detailDishes").addEventListener("click", event => {
+      const th = event.target.closest(".detail-thumbs img");
+      if (!th) return;
+      const media = th.closest(".detail-dish-media");
+      media.querySelector("img").src = th.getAttribute("data-dsrc");
+      media.querySelectorAll(".detail-thumbs img").forEach(t => t.classList.remove("active"));
+      th.classList.add("active");
+    });
+    window.addEventListener("popstate", () => {
+      if (location.hash.indexOf("#menu=") === 0) {
+        const e = decodeMenuHash(location.hash);
+        if (e) openMenuDetail(e, false);
+      } else {
+        closeMenuDetail();
+      }
+    });
+
+    const backTop = document.querySelector("#backTop");
+    window.addEventListener("scroll", () => {
+      backTop.classList.toggle("show", window.scrollY > 600);
+    }, { passive: true });
+    backTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+
+    document.querySelector("#viewCurrentMenu").addEventListener("click", () => {
+      const picked = dishes.filter(dish => selected.has(dish.id));
+      if (!picked.length) { showToast("先加入至少一道菜"); return; }
+      openMenuDetail({
+        id: getTodayMenuName(),
+        syncId: getTodayMenuName() + "#" + getVisitorId() + "#pick",
+        name: getTodayMenuName(),
+        savedAt: new Date().toISOString(),
+        device: getVisitorId(),
+        note: noteInput.value.trim(),
+        dishes: picked.map(dish => ({ id: dish.id, name: dish.name, category: dish.category }))
+      });
+    });
+
     function escapeHtml(value) {
       return String(value)
         .replaceAll("&", "&amp;")
@@ -1495,6 +1853,8 @@
 
     function renderGrid() {
       const visible = dishes.filter(dishMatches);
+      const shownCountEl = document.querySelector("#shownCount");
+      if (shownCountEl) shownCountEl.textContent = "共 " + dishes.length + " 道菜 · 当前显示 " + visible.length + " 道";
       const groups = categories
         .filter(category => category !== "全部")
         .map(category => ({
@@ -1522,7 +1882,7 @@
               const metaTags = (dish.tags || []).slice(0, 3).map(tag => `<span>${tag}</span>`).join("");
               const recipeButton = `<button type="button" data-recipe="${dish.id}">看菜谱</button>`;
               const imgs = (dish.images && dish.images.length ? dish.images : [dish.image]).filter(Boolean);
-              const idx = cardIndex.get(dish.id) || 0;
+              const idx = (cardIndex.get(dish.id) || 0) % imgs.length;
               const carousel = `
             <div class="dish-carousel" data-dish="${dish.id}">
               <img src="${imgs[idx]}" alt="${dish.name}" loading="lazy">
@@ -1561,6 +1921,8 @@
 
     function renderSelected() {
       const picked = dishes.filter(dish => selected.has(dish.id));
+      const viewBtn = document.querySelector("#viewCurrentMenu");
+      if (viewBtn) viewBtn.hidden = picked.length === 0;
       selectedList.innerHTML = picked.length ? picked.map(dish => `
         <div class="selected-item">
           ${imageMarkup(dish)}
@@ -1613,6 +1975,7 @@
       saveHistory(history);
       renderHistory();
       showToast(`${name} 已保存，正在同步…`);
+      openMenuDetail(entry);
       syncRefresh(true).then(ok => {
         showToast(ok ? `${name} 已保存并同步到云端` : `${name} 已保存（云端暂不可用，仅存在本机）`);
       });
@@ -1627,9 +1990,18 @@
             ${(entry.dishes || []).map(dish => `<li>${escapeHtml(dish.name)} · ${escapeHtml(dish.category || "")}${dish.heat ? " · " + escapeHtml(dish.heat) : ""}</li>`).join("")}
           </ul>
           ${entry.note ? `<p class="history-note">备注：${escapeHtml(entry.note)}</p>` : ""}
+          <div class="history-actions"><button type="button" class="ghost-btn" data-viewmenu="${escapeHtml(entry.syncId || entry.id)}">查看菜单详情 ›</button></div>
         </details>
       `).join("") : `<div class="empty-state">还没有保存过菜单。保存后会自动同步到云端，家人朋友保存的菜单你也能在这里看到。</div>`;
     }
+
+    historyList.addEventListener("click", event => {
+      const btn = event.target.closest("[data-viewmenu]");
+      if (!btn) return;
+      const key = btn.getAttribute("data-viewmenu");
+      const entry = mergeMenus(getHistory(), sharedMenus).find(m => (m.syncId || m.id) === key);
+      if (entry) openMenuDetail(entry);
+    });
 
     function setFeatured(dish) {
       const featuredImage = document.querySelector("#featuredImage");
@@ -1835,6 +2207,12 @@
     renderGrid();
     syncRefresh();
     setInterval(() => syncRefresh(false), 60000);
+
+    // 分享链接直达菜单详情：#menu=<编码数据>
+    if (location.hash.indexOf("#menu=") === 0) {
+      const shared = decodeMenuHash(location.hash);
+      if (shared) openMenuDetail(shared, false);
+    }
   </script>
 </body>
 </html>
