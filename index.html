@@ -537,8 +537,71 @@
       transition: transform .28s ease;
     }
 
-    .dish-card:hover img {
+    .dish-card:hover .dish-carousel img {
       transform: scale(1.04);
+    }
+
+    .dish-carousel {
+      position: absolute;
+      inset: 0;
+    }
+
+    .dish-carousel img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .car-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .88);
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .car-nav.prev { left: 6px; }
+    .car-nav.next { right: 6px; }
+
+    .dish-card:hover .car-nav {
+      display: flex;
+    }
+
+    .car-dots {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 8px;
+      display: none;
+      justify-content: center;
+      gap: 4px;
+      z-index: 2;
+    }
+
+    .dish-card:hover .car-dots {
+      display: flex;
+    }
+
+    .car-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .85);
+      cursor: pointer;
+    }
+
+    .car-dot.on {
+      background: var(--green);
     }
 
     .badge-row {
@@ -733,6 +796,24 @@
       gap: 22px;
     }
 
+    .modal-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .88);
+      color: var(--ink);
+      font-size: 20px;
+      display: grid;
+      place-items: center;
+      z-index: 2;
+    }
+
+    .modal-nav.prev { left: 12px; }
+    .modal-nav.next { right: 12px; }
+
     .modal-content h2 {
       margin: 0 0 8px;
       font-size: 30px;
@@ -908,7 +989,7 @@
       <div class="menu-head">
         <div>
           <h2>菜谱和图片</h2>
-          <p>图片与菜谱要点都来自小红书原帖：点“看菜谱”查看，弹窗里可“打开原笔记”看完整视频，点“加入午餐”放进候选清单。</p>
+          <p>图片与菜谱要点都来自小红书原帖：卡片图片会自动轮播（悬停暂停，可点箭头/圆点手动切换）；点“看菜谱”看图文做法和原笔记视频，点“加入午餐”放进候选清单。</p>
         </div>
         <button class="ghost-btn" id="showAll" type="button">
           <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
@@ -924,6 +1005,8 @@
       <div class="modal-hero">
         <img id="modalImage" src="" alt="" />
         <div class="modal-thumbs" id="modalThumbs"></div>
+        <button class="modal-nav prev" id="modalPrev" type="button" aria-label="上一张">‹</button>
+        <button class="modal-nav next" id="modalNext" type="button" aria-label="下一张">›</button>
         <button class="modal-close" id="closeModal" type="button" aria-label="关闭菜谱">
           <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
@@ -958,6 +1041,7 @@
         difficulty: "中等",
         heat: "不辣",
         image: "assets/tomato-beef.jpg",
+        images: ["assets/tomato-beef.jpg", "assets/img/6922d750000000001f00feeb_g1.webp", "assets/img/6904baae0000000004007d2a_g1.webp", "assets/img/67b5b69a000000000d0140c8_g2.webp"],
         desc: "番茄熬出汤底，牛腩炖到软烂，拌米饭很稳。",
         tags: ["牛肉", "番茄", "米饭", "酸甜"],
         ingredients: ["牛腩 500g", "番茄 3 个", "洋葱半个", "姜片、葱段", "生抽、老抽、盐、冰糖"],
@@ -971,6 +1055,7 @@
         difficulty: "简单",
         heat: "不辣",
         image: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=1200&q=80",
+        images: ["https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=1200&q=80", "assets/img/68fef28c0000000007008d9b_g1.webp", "assets/img/68fef28c0000000007008d9b_g2.webp", "assets/img/68fef28c0000000007008d9b_g3.webp"],
         desc: "甜咸口、颜色漂亮，适合想吃一点小满足的中午。",
         tags: ["鸡翅", "甜咸", "快手"],
         ingredients: ["鸡中翅 8-10 个", "可乐 1 听", "姜片", "生抽、老抽、料酒", "白芝麻"],
@@ -997,6 +1082,7 @@
         difficulty: "简单",
         heat: "微辣",
         image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=80",
+        images: ["https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=80", "assets/img/69e9c01c000000002202762e_g1.webp", "assets/img/69e9c01c000000002202762e_g2.webp", "assets/img/69e9c01c000000002202762e_g3.webp"],
         desc: "锅气足、很下饭，是午餐菜单里的常备选手。",
         tags: ["猪肉", "青椒", "家常"],
         ingredients: ["里脊肉 200g", "青椒 2 个", "蒜末", "生抽、蚝油", "淀粉、料酒"],
@@ -1101,6 +1187,7 @@
         difficulty: "简单",
         heat: "不辣",
         image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
+        images: ["https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80", "assets/img/6787220300000000160238c8_g1.webp", "assets/img/6787220300000000160238c8_g2.webp", "assets/img/6787220300000000160238c8_g3.webp"],
         desc: "清口配菜，适合搭配偏肉的主菜。",
         tags: ["青菜", "蒜蓉", "清淡"],
         ingredients: ["小青菜 300g", "蒜末", "盐", "少量糖", "食用油"],
@@ -1137,6 +1224,40 @@
     const chips = document.querySelector("#filterChips");
     const toast = document.querySelector("#toast");
     const modal = document.querySelector("#recipeModal");
+
+    const cardIndex = new Map();
+    const hoverCards = new Set();
+    const visibleCards = new Set();
+    const cardObserver = new IntersectionObserver(entries => {
+      for (const en of entries) {
+        if (en.isIntersecting) visibleCards.add(en.target.dataset.dish);
+        else visibleCards.delete(en.target.dataset.dish);
+      }
+    }, { threshold: 0.3 });
+
+    function observeCards() {
+      document.querySelectorAll(".dish-carousel").forEach(el => cardObserver.observe(el));
+    }
+
+    function advanceCard(id, delta, setIdx) {
+      const dish = dishes.find(item => item.id === id);
+      if (!dish) return;
+      const imgs = (dish.images && dish.images.length ? dish.images : [dish.image]).filter(Boolean);
+      if (imgs.length < 2) return;
+      const wrap = document.querySelector(`.dish-carousel[data-dish="${id}"]`);
+      if (!wrap) return;
+      const next = setIdx === undefined ? ((cardIndex.get(id) || 0) + delta + imgs.length) % imgs.length : setIdx;
+      cardIndex.set(id, next);
+      const img = wrap.querySelector("img");
+      if (img) img.src = imgs[next];
+      wrap.querySelectorAll(".car-dot").forEach((d, k) => d.classList.toggle("on", k === next));
+    }
+
+    setInterval(() => {
+      for (const id of visibleCards) {
+        if (!hoverCards.has(id)) advanceCard(id, 1);
+      }
+    }, 4500);
 
     function savePicks() {
       localStorage.setItem("lunch-picks", JSON.stringify([...selected]));
@@ -1240,10 +1361,21 @@
               const heatBadge = dish.heat ? `<span class="heat">${dish.heat}</span>` : "";
               const metaTags = (dish.tags || []).slice(0, 3).map(tag => `<span>${tag}</span>`).join("");
               const recipeButton = `<button type="button" data-recipe="${dish.id}">看菜谱</button>`;
+              const imgs = (dish.images && dish.images.length ? dish.images : [dish.image]).filter(Boolean);
+              const idx = cardIndex.get(dish.id) || 0;
+              const carousel = `
+            <div class="dish-carousel" data-dish="${dish.id}">
+              <img src="${imgs[idx]}" alt="${dish.name}" loading="lazy">
+              ${imgs.length > 1 ? `
+              <button type="button" class="car-nav prev" data-nav="-1" aria-label="上一张">‹</button>
+              <button type="button" class="car-nav next" data-nav="1" aria-label="下一张">›</button>
+              <div class="car-dots">${imgs.map((_, k) => `<span class="car-dot ${k === idx ? "on" : ""}" data-dot="${k}"></span>`).join("")}</div>
+              ` : ""}
+            </div>`;
               return `
         <article class="dish-card">
           <div class="dish-image">
-            ${imageMarkup(dish, "loading=\"lazy\"")}
+            ${carousel}
             <div class="badge-row">${badges}</div>
           </div>
           <div class="dish-body">
@@ -1263,6 +1395,7 @@
           </div>
         </section>
       `).join("") || `<div class="empty-state">没有找到匹配的菜，换个关键词试试。</div>`;
+      observeCards();
     }
 
     function renderSelected() {
@@ -1344,29 +1477,48 @@
       document.querySelector("#featuredDesc").textContent = dish.desc;
     }
 
+    let modalImgs = [], modalIdx = 0, modalAuto = null, modalDish = null;
+    function showModalImg(i) {
+      if (!modalImgs.length) return;
+      modalIdx = (i + modalImgs.length) % modalImgs.length;
+      const mainImg = document.querySelector("#modalImage");
+      mainImg.onerror = modalImgs[modalIdx].indexOf("assets/") === 0 && modalDish ? () => {
+        mainImg.onerror = null;
+        mainImg.src = fallbackImage(modalDish.name, modalDish.category);
+      } : null;
+      mainImg.src = modalImgs[modalIdx];
+      mainImg.alt = (modalDish ? modalDish.name : "") + " 图" + (modalIdx + 1);
+      document.querySelectorAll("#modalThumbs img").forEach((t, k) => t.classList.toggle("active", k === modalIdx));
+    }
+    function stopModalAuto() {
+      if (modalAuto) { clearInterval(modalAuto); modalAuto = null; }
+    }
+    function startModalAuto() {
+      stopModalAuto();
+      if (modalImgs.length < 2) return;
+      modalAuto = setInterval(() => {
+        if (!modal.classList.contains("open")) { stopModalAuto(); return; }
+        showModalImg(modalIdx + 1);
+      }, 3500);
+    }
+    function modalManual(delta) {
+      showModalImg(modalIdx + delta);
+      startModalAuto();
+    }
     function openRecipe(id) {
       const dish = dishes.find(item => item.id === id);
       if (!dish) return;
-      const modalImage = document.querySelector("#modalImage");
-      const imgs = (dish.images && dish.images.length ? dish.images : [dish.image]).filter(Boolean);
-      modalImage.onerror = imgs[0] && dish.image ? () => {
-        modalImage.onerror = null;
-        modalImage.src = fallbackImage(dish.name, dish.category);
-      } : null;
-      modalImage.src = imgs[0] || fallbackImage(dish.name, dish.category);
-      modalImage.alt = dish.name;
+      modalDish = dish;
+      modalImgs = (dish.images && dish.images.length ? dish.images : [dish.image]).filter(Boolean);
       const thumbs = document.querySelector("#modalThumbs");
-      thumbs.innerHTML = imgs.length > 1
-        ? imgs.map((src, i) => `<img src="${src}" data-idx="${i}" class="${i === 0 ? "active" : ""}" alt="图${i + 1}">`).join("")
+      thumbs.innerHTML = modalImgs.length > 1
+        ? modalImgs.map((src, i) => `<img src="${src}" data-idx="${i}" class="${i === 0 ? "active" : ""}" alt="图${i + 1}">`).join("")
         : "";
-      thumbs.onclick = event => {
-        const im = event.target.closest("img[data-idx]");
-        if (!im) return;
-        modalImage.src = imgs[Number(im.dataset.idx)];
-        modalImage.alt = dish.name + " 图" + (Number(im.dataset.idx) + 1);
-        thumbs.querySelectorAll("img").forEach(t => t.classList.remove("active"));
-        im.classList.add("active");
-      };
+      showModalImg(0);
+      startModalAuto();
+      const navDisplay = modalImgs.length > 1 ? "" : "none";
+      document.querySelector("#modalPrev").style.display = navDisplay;
+      document.querySelector("#modalNext").style.display = navDisplay;
       document.querySelector("#modalTitle").textContent = dish.name;
       document.querySelector("#modalDesc").textContent = dish.desc || "";
       const metaParts = dish.url
@@ -1423,10 +1575,30 @@
     });
 
     grid.addEventListener("click", event => {
+      const nav = event.target.closest("[data-nav]");
+      const dot = event.target.closest("[data-dot]");
       const recipe = event.target.closest("[data-recipe]");
       const pick = event.target.closest("[data-pick]");
+      if (nav) {
+        advanceCard(nav.closest(".dish-carousel").dataset.dish, Number(nav.dataset.nav));
+        return;
+      }
+      if (dot) {
+        advanceCard(dot.closest(".dish-carousel").dataset.dish, 0, Number(dot.dataset.dot));
+        return;
+      }
       if (recipe) openRecipe(recipe.dataset.recipe);
       if (pick) addPick(pick.dataset.pick);
+    });
+
+    grid.addEventListener("mouseover", event => {
+      const wrap = event.target.closest(".dish-carousel");
+      if (wrap && !(event.relatedTarget && wrap.contains(event.relatedTarget))) hoverCards.add(wrap.dataset.dish);
+    });
+
+    grid.addEventListener("mouseout", event => {
+      const wrap = event.target.closest(".dish-carousel");
+      if (wrap && !(event.relatedTarget && wrap.contains(event.relatedTarget))) hoverCards.delete(wrap.dataset.dish);
     });
 
     selectedList.addEventListener("click", event => {
@@ -1469,12 +1641,22 @@
       renderGrid();
     });
 
-    document.querySelector("#closeModal").addEventListener("click", () => modal.classList.remove("open"));
+    document.querySelector("#closeModal").addEventListener("click", () => { modal.classList.remove("open"); stopModalAuto(); });
     modal.addEventListener("click", event => {
-      if (event.target === modal) modal.classList.remove("open");
+      if (event.target === modal) { modal.classList.remove("open"); stopModalAuto(); }
     });
     window.addEventListener("keydown", event => {
-      if (event.key === "Escape") modal.classList.remove("open");
+      if (event.key === "Escape") { modal.classList.remove("open"); stopModalAuto(); }
+      if (event.key === "ArrowLeft" && modal.classList.contains("open")) modalManual(-1);
+      if (event.key === "ArrowRight" && modal.classList.contains("open")) modalManual(1);
+    });
+    document.querySelector("#modalPrev").addEventListener("click", () => modalManual(-1));
+    document.querySelector("#modalNext").addEventListener("click", () => modalManual(1));
+    document.querySelector("#modalThumbs").addEventListener("click", event => {
+      const im = event.target.closest("img[data-idx]");
+      if (!im) return;
+      showModalImg(Number(im.dataset.idx));
+      startModalAuto();
     });
 
     noteInput.value = localStorage.getItem("lunch-note") || "";
