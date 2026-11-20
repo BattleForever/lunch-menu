@@ -1714,7 +1714,7 @@
       document.querySelector("#detailDishes").innerHTML = (detailEntry.dishes || []).map(it => {
         const dish = dishes.find(d => d.id === it.id);
         if (!dish) {
-          return `<div class="detail-dish"><div class="detail-dish-body"><h3>${it.name || "未知菜品"}</h3><p class="history-note">该菜谱在当前版本中不存在。</p></div></div>`;
+          return `<div class="detail-dish"><div class="detail-dish-body"><h3>${escapeHtml(it.name) || "未知菜品"}</h3><p class="history-note">该菜谱在当前版本中不存在。</p></div></div>`;
         }
         return dishDetailCard(dish);
       }).join("");
