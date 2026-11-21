@@ -636,6 +636,12 @@
       backdrop-filter: blur(8px);
     }
 
+    .badge-added {
+      background: #e8f7ee;
+      color: #1c8a4e;
+      font-weight: 600;
+    }
+
     .dish-body {
       padding: 14px 14px 15px;
       display: flex;
@@ -1249,7 +1255,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="assets/collected-dishes.js?v=4"></script>
+  <script src="assets/collected-dishes.js?v=5"></script>
   <script>
     const recipes = [
       {
@@ -1875,7 +1881,7 @@
           <div class="grid">
             ${group.items.map(dish => {
               const badges = dish.url
-                ? [`<span class="badge">${dish.category}</span>`, dish.likes ? `<span class="badge">❤ ${dish.likes}</span>` : "", dish.ntype ? `<span class="badge">${dish.ntype}</span>` : ""].filter(Boolean).join("")
+                ? [`<span class="badge">${dish.category}</span>`, dish.likes ? `<span class="badge">❤ ${dish.likes}</span>` : "", dish.ntype ? `<span class="badge">${dish.ntype}</span>` : "", dish.addedAt ? `<span class="badge badge-added">📅 ${dish.addedAt.slice(5)} 补录</span>` : ""].filter(Boolean).join("")
                 : `<span class="badge">${dish.category}</span><span class="badge">${dish.time}</span><span class="badge">${dish.heat}</span>`;
               const cardDesc = dish.desc || "";
               const heatBadge = dish.heat ? `<span class="heat">${dish.heat}</span>` : "";
@@ -2059,9 +2065,9 @@
       document.querySelector("#modalNext").style.display = navDisplay;
       document.querySelector("#modalTitle").textContent = dish.name;
       document.querySelector("#modalDesc").textContent = dish.desc || "";
-      const metaParts = dish.url
-        ? [dish.category, "@" + dish.source, "❤ " + dish.likes, dish.ntype]
-        : [dish.category, dish.time, dish.difficulty, dish.heat];
+      const metaParts = (dish.url
+        ? [dish.category, "@" + dish.source, "❤ " + dish.likes, dish.ntype, dish.addedAt ? "补录于 " + dish.addedAt : ""]
+        : [dish.category, dish.time, dish.difficulty, dish.heat]).filter(Boolean);
       document.querySelector("#modalMeta").innerHTML = metaParts.map(item => `<span>${item}</span>`).join("");
       const ing = dish.ingredients || [];
       const stp = dish.steps || [];
